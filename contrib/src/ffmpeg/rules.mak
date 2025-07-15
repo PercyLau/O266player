@@ -7,7 +7,7 @@
 ifndef USE_LIBAV
 FFMPEG_HASH=eaff5fcb7cde8d1614755269773d471d3a3d1bfc
 FFMPEG_SNAPURL := http://git.videolan.org/?p=ffmpeg.git;a=snapshot;h=$(FFMPEG_HASH);sf=tgz
-FFMPEG_GITURL := http://git.videolan.org/git/ffmpeg.git
+FFMPEG_GITURL := https://git.ffmpeg.org/git/ffmpeg.git
 FFMPEG_LAVC_MIN := 57.37.100
 USE_FFMPEG := 1
 else

@@ -26,12 +26,19 @@ ifndef AD_CLAUSES
 endif
 	cd $< && cp builds/unix/install-sh .
 	sed -i.orig s/-ansi// $</builds/unix/configure
+	
+	# 運行 configure 命令，生成 Makefile
 	cd $< && GNUMAKE=$(MAKE) $(HOSTVARS) \
 		./configure --with-harfbuzz=no --with-zlib=yes --without-png --with-bzip2=no \
-		$(HOSTCONF) \
-		# 關鍵修改：添加 CFLAGS 和 LDFLAGS，明確指定 -mconsole
-		CFLAGS="$(CFLAGS) -mconsole" \
-		LDFLAGS="$(LDFLAGS) -mconsole"
+		$(HOSTCONF)
 	
+	# 關鍵修改：在 FreeType 的 Makefile 中插入 -mconsole 標誌
+	# 注意這裡的 sed 替換可能需要根據實際生成的 Makefile 內容進行微調
+	# 我們假設 FreeType 的 Makefile 中會定義 CFLAGS 和 LDFLAGS 變量，我們需要追加 -mconsole
+	cd $< && sed -i 's/^\(BASE_CFLAGS = .*\)/\1 -mconsole/' Makefile
+	cd $< && sed -i 's/^\(BASE_LDFLAGS = .*\)/\1 -mconsole/' Makefile
+	# 如果是其他變量名，例如 CC_SHARED_FLAGS 或 LD_SHARED_FLAGS 等，則需要相應調整
+
+	# 執行 make 和 make install
 	cd $< && $(MAKE) && $(MAKE) install
 	touch $@

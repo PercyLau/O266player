@@ -26,6 +26,12 @@ ifndef AD_CLAUSES
 endif
 	cd $< && cp builds/unix/install-sh .
 	sed -i.orig s/-ansi// $</builds/unix/configure
-	cd $< && GNUMAKE=$(MAKE) $(HOSTVARS) ./configure --with-harfbuzz=no --with-zlib=yes --without-png --with-bzip2=no $(HOSTCONF)
+	cd $< && GNUMAKE=$(MAKE) $(HOSTVARS) \
+		./configure --with-harfbuzz=no --with-zlib=yes --without-png --with-bzip2=no \
+		$(HOSTCONF) \
+		# 關鍵修改：添加 CFLAGS 和 LDFLAGS，明確指定 -mconsole
+		CFLAGS="$(CFLAGS) -mconsole" \
+		LDFLAGS="$(LDFLAGS) -mconsole"
+	
 	cd $< && $(MAKE) && $(MAKE) install
 	touch $@

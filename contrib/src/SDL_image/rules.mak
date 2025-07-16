@@ -26,6 +26,18 @@ DEPS_SDL_image = jpeg $(DEPS_jpeg) tiff $(DEPS_tiff) \
 	sdl $(DEPS_sdl)
 
 .SDL_image: SDL_image .sdl
-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF) --enable-tif --disable-sdltest --disable-png
+	# 這裡添加或修改 CFLAGS 以包含 SDL 頭文件的具體路徑
+	# 最可靠的方式是確保 configure 腳本接收到正確的 SDL_CFLAGS
+	# 即使 configure 已經自動探測，也最好明確傳遞
+	cd $< && PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH) \
+		$(HOSTVARS) ./configure $(HOSTCONF) --enable-tif --disable-sdltest --disable-png \
+		# 添加這兩行，將 pkg-config 提供的正確路徑傳遞給 configure
+		SDL_CFLAGS="$(shell $(PKG_CONFIG) --cflags sdl)" \
+		SDL_LIBS="$(shell $(PKG_CONFIG) --libs sdl)"
+
+	# 如果上面 configure 仍然有問題，可以嘗試在 make 命令中直接添加 CFLAGS
+	# cd $< && $(HOSTVARS) CFLAGS="$(CFLAGS) $(shell $(PKG_CONFIG) --cflags sdl)" \
+	# 	$(MAKE) install
+
 	cd $< && $(MAKE) install
 	touch $@

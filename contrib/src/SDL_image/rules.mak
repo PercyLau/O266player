@@ -26,18 +26,12 @@ DEPS_SDL_image = jpeg $(DEPS_jpeg) tiff $(DEPS_tiff) \
 	sdl $(DEPS_sdl)
 
 .SDL_image: SDL_image .sdl
-	# 這裡添加或修改 CFLAGS 以包含 SDL 頭文件的具體路徑
-	# 最可靠的方式是確保 configure 腳本接收到正確的 SDL_CFLAGS
-	# 即使 configure 已經自動探測，也最好明確傳遞
+	# 這裡先執行 configure，讓它生成基礎的 Makefile
+	# configure 應該會使用 PKG_CONFIG_PATH 找到 sdl.pc，並設置一些默認的 CFLAGS
 	cd $< && PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH) \
-		$(HOSTVARS) ./configure $(HOSTCONF) --enable-tif --disable-sdltest --disable-png \
-		# 添加這兩行，將 pkg-config 提供的正確路徑傳遞給 configure
-		SDL_CFLAGS="$(shell $(PKG_CONFIG) --cflags sdl)" \
-		SDL_LIBS="$(shell $(PKG_CONFIG) --libs sdl)"
+		$(HOSTVARS) ./configure $(HOSTCONF) --enable-tif --disable-sdltest --disable-png
 
-	# 如果上面 configure 仍然有問題，可以嘗試在 make 命令中直接添加 CFLAGS
-	# cd $< && $(HOSTVARS) CFLAGS="$(CFLAGS) $(shell $(PKG_CONFIG) --cflags sdl)" \
-	# 	$(MAKE) install
-
-	cd $< && $(MAKE) install
+	# 然後，在實際的 make install 命令中，顯式地添加所需的 include 路徑
+	# 這樣可以確保編譯器在 IMG.c 編譯時有正確的搜索路徑
+	cd $< && $(MAKE) install CFLAGS="$(CFLAGS) -I$(PREFIX)/include -I$(PREFIX)/include/SDL"
 	touch $@
